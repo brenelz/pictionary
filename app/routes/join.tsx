@@ -145,7 +145,7 @@ export default function Join() {
             />
           </div>
           <button
-            className="w-full rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
+            className="w-full rounded bg-rose-500  py-2 px-4 text-white hover:bg-rose-600 focus:bg-rose-400"
             type="submit"
           >
             Create Account
@@ -155,7 +155,7 @@ export default function Join() {
             <div className="text-center text-sm text-gray-500">
               Already have an account?{" "}
               <Link
-                className="text-blue-500 underline"
+                className="text-rose-500 underline"
                 to={{
                   pathname: "/login",
                   search: searchParams.toString(),

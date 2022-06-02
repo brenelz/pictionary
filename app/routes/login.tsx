@@ -55,6 +55,7 @@ export const action: ActionFunction = async ({ request }) => {
   }
 
   const user = await verifyLogin(email, password);
+  console.log(user);
 
   if (!user) {
     return json(
@@ -67,13 +68,13 @@ export const action: ActionFunction = async ({ request }) => {
     request,
     userId: user.id,
     remember: remember === "on" ? true : false,
-    redirectTo: typeof redirectTo === "string" ? redirectTo : "/notes",
+    redirectTo: typeof redirectTo === "string" ? redirectTo : "/pictionary",
   });
 };
 
 export default function Login() {
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") ?? "/notes";
+  const redirectTo = searchParams.get("redirectTo") ?? "/pictionary";
 
   const actionData = useActionData() as ActionData;
   const emailRef = React.useRef<HTMLInputElement>(null);
@@ -137,7 +138,7 @@ export default function Login() {
             />
           </div>
           <button
-            className="w-full rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
+            className="w-full rounded bg-rose-500  py-2 px-4 text-white hover:bg-rose-600 focus:bg-rose-400"
             type="submit"
           >
             Log in
@@ -146,7 +147,7 @@ export default function Login() {
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <input
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="h-4 w-4 rounded border-gray-300 text-rose-600 focus:ring-rose-500"
                 id="remember"
                 name="remember"
                 type="checkbox"
@@ -161,7 +162,7 @@ export default function Login() {
             <div className="text-center text-sm text-gray-500">
               Don't have an account?{" "}
               <Link
-                className="text-blue-500 underline"
+                className="text-rose-500 underline"
                 to={{ pathname: "/join" }}
               >
                 Sign up
