@@ -9,6 +9,8 @@ import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import { verifyLogin } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { validateEmail } from "~/utils";
+import { addPlayer } from "~/models/game_state.server";
+import { currentGame } from "./pictionary";
 
 export const meta: MetaFunction = () => {
   return {
@@ -55,7 +57,6 @@ export const action: ActionFunction = async ({ request }) => {
   }
 
   const user = await verifyLogin(email, password);
-  console.log(user);
 
   if (!user) {
     return json(
@@ -63,6 +64,8 @@ export const action: ActionFunction = async ({ request }) => {
       { status: 400 }
     );
   }
+
+  await addPlayer(currentGame, email);
 
   return createUserSession({
     request,

@@ -47,6 +47,16 @@ export async function updateScore(email: string, score: number) {
   if (data) return data;
 }
 
+export async function getScores() {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, score, email")
+    .order("score", { ascending: false });
+
+  if (error) return null;
+  if (data) return data;
+}
+
 export async function verifyLogin(email: string, password: string) {
   const { user, error } = await supabase.auth.signIn({
     email,

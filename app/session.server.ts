@@ -1,6 +1,8 @@
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
 import invariant from "tiny-invariant";
+import { removePlayer } from "./models/game_state.server";
 import { getProfileById } from "./models/user.server";
+import { currentGame } from "./routes/pictionary";
 
 invariant(
   process.env.SESSION_SECRET,
@@ -97,6 +99,11 @@ export async function createUserSession({
 
 export async function logout(request: Request) {
   const session = await getSession(request);
+  const user = await getUser(request);
+  if(user) {
+    await removePlayer(currentGame, user.email);
+  }
+  
   return redirect("/", {
     headers: {
       "Set-Cookie": await sessionStorage.destroySession(session),
