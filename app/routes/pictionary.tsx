@@ -32,7 +32,8 @@ export type LoaderData = {
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
-  if (!userId) return redirect("/");
+  const user = await getUser(request);
+  if (!userId || !user) return redirect("/");
 
   const messages = await getMessages();
   const gameState = await getGameState(currentGame);
@@ -48,6 +49,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   return json({
     messages,
+    user,
     gameState,
     scores,
     env: {
@@ -92,8 +94,8 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function Index() {
-  const user = useUser();
   const data = useLoaderData() as LoaderData;
+  const user = data.user;
   const fetcher = useFetcher();
   const [messages, setMessages] = useState(data.messages);
   const [gameState, setGameState] = useState(data.gameState);
