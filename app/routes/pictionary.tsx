@@ -2,7 +2,7 @@ import { Form, useLoaderData, useFetcher } from "@remix-run/react";
 import { useOptionalUser } from "~/utils";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { redirect, json } from "@remix-run/node";
-import { getUser, getUserId } from "~/session.server";
+import { getUser, getUserId, logout } from "~/session.server";
 import { createMessage, getMessages } from "~/models/messages.server";
 import type { Message } from "~/models/messages.server";
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -52,25 +52,33 @@ export const loader: LoaderFunction = async ({ request }) => {
 export const action: ActionFunction = async ({ request }) => {
   const form = await request.formData();
   let text = form.get("text");
+  const intent = form.get("intent");
+  if (intent === "leave") {
+    return logout(request);
+  }
+
+  const gameState = await getGameState(currentGame);
+
+  if (intent === "skip" && gameState) {
+    await nextPlayer(currentGame, gameState.players, gameState.current_drawer);
+    return null;
+  }
+
   const user = await getUser(request);
 
   if (typeof text !== "string" || text.length === 0) {
     return null;
   }
 
-  const gameState = await getGameState(currentGame);
-
   const hasWon = text === gameState?.word;
 
   if (hasWon) {
-    text = "✅ " + text;
     await updateScore(user?.email, user?.score + 1);
     await nextPlayer(currentGame, gameState.players, gameState.current_drawer);
+    await createMessage(user?.email, "✅ " + text);
   } else {
-    text = "❌ " + text;
+    await createMessage(user?.email, "❌ " + text);
   }
-
-  await createMessage(user?.email, text);
 
   return null;
 };
@@ -105,10 +113,10 @@ export default function Index() {
     onChange: onDrawingChange,
   });
 
-  // const handleReset = useCallback(() => {
-  //   resetDrawer();
-  //   resetViewer();
-  // }, [resetDrawer, resetViewer]);
+  const handleReset = useCallback(() => {
+    resetDrawer();
+    resetViewer();
+  }, [resetDrawer, resetViewer]);
 
   useEffect(() => {
     const messagesSubscription = supabase
@@ -168,24 +176,25 @@ export default function Index() {
                 <p>&nbsp;</p>
               )}
 
-              <Form action="/logout" method="post" className="">
+              <Form method="post">
                 <p className="my-4 flex">
                   <button
                     type="submit"
+                    name="intent"
+                    value="leave"
                     className="mr-2 rounded bg-rose-600 py-2 px-4 text-xs text-blue-100 hover:bg-rose-500 active:bg-rose-600"
                   >
                     Leave
                   </button>
 
-                  {/* <button
+                  <button
                     className="mr-2 rounded bg-slate-600 py-2 px-4 text-xs text-blue-100 hover:bg-slate-500 active:bg-slate-600 disabled:bg-slate-400"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleReset();
-                    }}
+                    type="submit"
+                    name="intent"
+                    value="skip"
                   >
-                    Clear
-                  </button> */}
+                    Skip
+                  </button>
                 </p>
               </Form>
 
