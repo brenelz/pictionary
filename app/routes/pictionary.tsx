@@ -221,7 +221,7 @@ export default function Index() {
                         <p key={message.id} className="mb-1">
                           <strong
                             className={
-                              user.email !== message.email
+                              user?.email !== message.email
                                 ? "text-slate-600"
                                 : ""
                             }
