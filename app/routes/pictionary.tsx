@@ -187,14 +187,16 @@ export default function Index() {
                     Leave
                   </button>
 
-                  <button
-                    className="mr-2 rounded bg-slate-600 py-2 px-4 text-xs text-blue-100 hover:bg-slate-500 active:bg-slate-600 disabled:bg-slate-400"
-                    type="submit"
-                    name="intent"
-                    value="skip"
-                  >
-                    Skip
-                  </button>
+                  {!isWaiting && (
+                    <button
+                      className="mr-2 rounded bg-slate-600 py-2 px-4 text-xs text-blue-100 hover:bg-slate-500 active:bg-slate-600 disabled:bg-slate-400"
+                      type="submit"
+                      name="intent"
+                      value="skip"
+                    >
+                      Skip
+                    </button>
+                  )}
                 </p>
               </Form>
 
