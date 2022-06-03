@@ -13,12 +13,14 @@ import { nextPlayer } from "~/models/game_state.server";
 import type { onChangeMethod } from "react-realtime-drawing/dist/types";
 import { getGameState } from "~/models/game_state.server";
 import type { GameState } from "~/models/game_state.server";
+import type { User } from "~/models/user.server";
 
 export const currentGame = 1;
 
 export type LoaderData = {
   messages: Message[];
   gameState: GameState;
+  user: User;
   scores: {
     id: number;
     email: string;
@@ -80,7 +82,7 @@ export const action: ActionFunction = async ({ request }) => {
     return null;
   }
 
-  const hasWon = text === gameState?.word;
+  const hasWon = text.toLowerCase() === gameState?.word.toLowerCase();
 
   if (hasWon) {
     await updateScore(user?.email, user?.score + 1);
@@ -136,6 +138,12 @@ export default function Index() {
       })
       .subscribe();
 
+    return () => {
+      supabase.removeSubscription(messagesSubscription);
+    };
+  }, []);
+
+  useEffect(() => {
     const gameStateSubscription = supabase
       .from("game_state")
       .on("UPDATE", (payload) => {
@@ -148,7 +156,6 @@ export default function Index() {
       .subscribe();
 
     return () => {
-      supabase.removeSubscription(messagesSubscription);
       supabase.removeSubscription(gameStateSubscription);
     };
   }, [onChange]);
