@@ -203,8 +203,8 @@ export default function Index() {
                 </p>
               </Form>
 
-              <div className="gap-100 flex h-96">
-                <div className="w-2/3 border-2">
+              <div className="mh-96 flex flex-wrap">
+                <div className="mh-96 w-full border-2 md:w-2/3">
                   <canvas
                     className={!isDrawer ? "hidden" : ""}
                     ref={drawerRef}
@@ -214,7 +214,7 @@ export default function Index() {
                     ref={viewerRef}
                   />
                 </div>
-                <div className="w-1/3 border-2 p-2 px-4 text-xs">
+                <div className="w-full border-2 p-2 px-4 text-xs md:w-1/3">
                   <div className="flex h-80 flex-col-reverse overflow-scroll">
                     {messages.length > 0 &&
                       messages.map((message) => (
@@ -234,7 +234,7 @@ export default function Index() {
                   </div>
                   <fetcher.Form
                     method="post"
-                    className="mt-2 flex"
+                    className="mt-2 flex flex-wrap gap-2"
                     ref={formRef}
                   >
                     <input
@@ -247,7 +247,7 @@ export default function Index() {
                     <button
                       disabled={!!fetcher.submission || isDrawer || isWaiting}
                       type="submit"
-                      className="ml-2 rounded bg-slate-600 py-2 px-4 text-blue-100 hover:bg-slate-500 active:bg-slate-600 disabled:bg-slate-400"
+                      className="rounded bg-slate-600 py-2 px-4 text-blue-100 hover:bg-slate-500 active:bg-slate-600 disabled:bg-slate-400"
                     >
                       Guess!
                     </button>
