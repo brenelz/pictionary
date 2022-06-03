@@ -92,7 +92,6 @@ export default function Index() {
   const isWaiting = gameState.players.length < 2;
 
   const onDrawingChange: onChangeMethod = async (payload) => {
-    console.log(payload);
     await supabase
       .from("game_state")
       .update({ drawing: payload })
@@ -115,7 +114,7 @@ export default function Index() {
     const messagesSubscription = supabase
       .from("messages")
       .on("INSERT", (payload) => {
-        setMessages([payload.new, ...messages]);
+        setMessages((messages) => [payload.new, ...messages]);
       })
       .subscribe();
 
@@ -131,7 +130,7 @@ export default function Index() {
       supabase.removeSubscription(messagesSubscription);
       supabase.removeSubscription(gameStateSubscription);
     };
-  }, [supabase, messages, onChange]);
+  }, [onChange]);
 
   useEffect(() => {
     setMessages(data.messages);
