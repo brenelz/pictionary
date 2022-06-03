@@ -131,6 +131,9 @@ export default function Index() {
       .on("UPDATE", (payload) => {
         onChange(payload.new.drawing);
         setGameState(payload.new);
+        if (payload.new.drawing.length === 0) {
+          handleReset();
+        }
       })
       .subscribe();
 
@@ -202,8 +205,14 @@ export default function Index() {
 
               <div className="gap-100 flex h-96">
                 <div className="w-2/3 border-2">
-                  {isDrawer && <canvas ref={drawerRef} />}
-                  {!isDrawer && <canvas ref={viewerRef} />}
+                  <canvas
+                    className={!isDrawer ? "hidden" : ""}
+                    ref={drawerRef}
+                  />
+                  <canvas
+                    className={isDrawer ? "hidden" : ""}
+                    ref={viewerRef}
+                  />
                 </div>
                 <div className="w-1/3 border-2 p-2 px-4 text-xs">
                   <div className="flex h-80 flex-col-reverse overflow-scroll">
