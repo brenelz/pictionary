@@ -96,7 +96,7 @@ export default function Index() {
 
   const [viewerRef, onChange, { reset: resetViewer }] = useRealtimeViewer();
   const drawer = gameState.players[gameState.current_drawer];
-  const isDrawer = drawer === user.email;
+  const isDrawer = drawer === user?.email;
   const isWaiting = gameState.players.length < 2;
 
   const onDrawingChange: onChangeMethod = async (payload) => {
