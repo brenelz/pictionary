@@ -1,5 +1,5 @@
 import { Form, useLoaderData, useFetcher } from "@remix-run/react";
-import { useOptionalUser } from "~/utils";
+import { useUser } from "~/utils";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { redirect, json } from "@remix-run/node";
 import { getUser, getUserId, logout } from "~/session.server";
@@ -37,6 +37,14 @@ export const loader: LoaderFunction = async ({ request }) => {
   const messages = await getMessages();
   const gameState = await getGameState(currentGame);
   const scores = await getScores();
+
+  if (gameState && gameState?.current_drawer > gameState?.players.length - 1) {
+    await nextPlayer(
+      currentGame,
+      gameState?.players,
+      gameState?.current_drawer
+    );
+  }
 
   return json({
     messages,
@@ -84,7 +92,7 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function Index() {
-  const user = useOptionalUser();
+  const user = useUser();
   const data = useLoaderData() as LoaderData;
   const fetcher = useFetcher();
   const [messages, setMessages] = useState(data.messages);
@@ -157,42 +165,42 @@ export default function Index() {
     <main className="relative min-h-screen w-full bg-white sm:flex sm:items-center sm:justify-center">
       <div className="relative w-full sm:pb-16 sm:pt-8">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-          <div
-            className={`relative sm:overflow-hidden sm:rounded-2xl ${
-              isWaiting ? "opacity-50" : ""
-            }`}
-          >
+          <div className={`relative sm:overflow-hidden sm:rounded-2xl`}>
             <div className="lg:pb-18 relative px-4 pb-8 sm:px-6  sm:pb-14 lg:px-8">
-              <h1 className="pb-6 text-center text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-4xl">
+              <h1 className="pt-4 pb-6 text-center text-3xl font-extrabold tracking-tight sm:pt-0 sm:text-4xl lg:text-4xl">
                 <span className="block uppercase text-rose-500 drop-shadow-md">
-                  Pictionary
+                  Pictionary{" "}
                 </span>
               </h1>
 
               {!isWaiting && isDrawer ? (
-                <p>
+                <p className="text-center">
                   Draw the word: <strong>{gameState.word}</strong>
                 </p>
-              ) : isWaiting ? (
-                <p>Waiting for players...</p>
               ) : (
                 <p>&nbsp;</p>
               )}
 
               <Form method="post">
-                <p className="my-4 flex">
+                <p className="my-4 flex justify-center gap-2">
+                  {isWaiting && (
+                    <span className="text-lg text-slate-500">
+                      Waiting for players...
+                    </span>
+                  )}
+
                   <button
                     type="submit"
                     name="intent"
                     value="leave"
-                    className="mr-2 rounded bg-rose-600 py-2 px-4 text-xs text-blue-100 hover:bg-rose-500 active:bg-rose-600"
+                    className="rounded bg-rose-600 py-2 px-4 text-xs text-blue-100 hover:bg-rose-500 active:bg-rose-600"
                   >
                     Leave
                   </button>
 
                   {!isWaiting && (
                     <button
-                      className="mr-2 rounded bg-slate-600 py-2 px-4 text-xs text-blue-100 hover:bg-slate-500 active:bg-slate-600 disabled:bg-slate-400"
+                      className="rounded bg-slate-600 py-2 px-4 text-xs text-blue-100 hover:bg-slate-500 active:bg-slate-600 disabled:bg-slate-400"
                       type="submit"
                       name="intent"
                       value="skip"
@@ -203,7 +211,11 @@ export default function Index() {
                 </p>
               </Form>
 
-              <div className="mh-96 flex flex-wrap">
+              <div
+                className={`mh-96 flex flex-wrap ${
+                  isWaiting ? " pointer-events-none opacity-30" : ""
+                }`}
+              >
                 <div className="mh-96 w-full border-2 md:w-2/3">
                   <canvas
                     className={!isDrawer ? "hidden" : ""}
