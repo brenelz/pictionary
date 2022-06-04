@@ -1,5 +1,4 @@
 import { Link } from "@remix-run/react";
-import { useOptionalUser } from "~/utils";
 import type { LoaderFunction } from "@remix-run/node";
 import { getUserId } from "~/session.server";
 import { redirect, json } from "@remix-run/node";
@@ -11,7 +10,6 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function Index() {
-  const user = useOptionalUser();
   return (
     <main className="relative min-h-screen bg-white sm:flex sm:items-center sm:justify-center">
       <div className="relative sm:pb-16 sm:pt-8">
@@ -25,22 +23,20 @@ export default function Index() {
               </h1>
 
               <div className="mx-auto mt-10 max-w-sm sm:flex sm:max-w-none sm:justify-center">
-                {!user && (
-                  <div className="space-y-4 sm:mx-auto sm:inline-grid sm:grid-cols-2 sm:gap-5 sm:space-y-0">
-                    <Link
-                      to="/join"
-                      className="flex items-center justify-center rounded-md border border-transparent bg-white px-4 py-3 text-base font-medium text-rose-700 shadow-sm hover:bg-rose-50 sm:px-8"
-                    >
-                      Sign up
-                    </Link>
-                    <Link
-                      to="/login"
-                      className="flex items-center justify-center rounded-md bg-rose-500 px-4 py-3 font-medium text-white hover:bg-rose-600  "
-                    >
-                      Log In
-                    </Link>
-                  </div>
-                )}
+                <div className="space-y-4 sm:mx-auto sm:inline-grid sm:grid-cols-2 sm:gap-5 sm:space-y-0">
+                  <Link
+                    to="/join"
+                    className="flex items-center justify-center rounded-md border border-transparent bg-white px-4 py-3 text-base font-medium text-rose-700 shadow-sm hover:bg-rose-50 sm:px-8"
+                  >
+                    Sign up
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="flex items-center justify-center rounded-md bg-rose-500 px-4 py-3 font-medium text-white hover:bg-rose-600  "
+                  >
+                    Log In
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

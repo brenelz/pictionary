@@ -1,5 +1,4 @@
 import { Form, useLoaderData, useFetcher } from "@remix-run/react";
-import { useUser } from "~/utils";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { redirect, json } from "@remix-run/node";
 import { getUser, getUserId, logout } from "~/session.server";
@@ -7,25 +6,19 @@ import { createMessage, getMessages } from "~/models/messages.server";
 import type { Message } from "~/models/messages.server";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { getScores, updateScore } from "~/models/user.server";
+import { getPlayers, updateScore } from "~/models/user.server";
 import { useRealtimeDrawer, useRealtimeViewer } from "react-realtime-drawing";
-import { nextPlayer } from "~/models/game_state.server";
+import { nextPlayer } from "~/models/gameState.server";
 import type { onChangeMethod } from "react-realtime-drawing/dist/types";
-import { getGameState } from "~/models/game_state.server";
-import type { GameState } from "~/models/game_state.server";
+import { getGameState } from "~/models/gameState.server";
+import type { GameState } from "~/models/gameState.server";
 import type { User } from "~/models/user.server";
-
-export const currentGame = 1;
 
 export type LoaderData = {
   messages: Message[];
   gameState: GameState;
   user: User;
-  scores: {
-    id: number;
-    email: string;
-    score: number;
-  }[];
+  players: User[];
   env: {
     supabaseUrl: string;
     supabaseAnonKey: string;
@@ -38,22 +31,18 @@ export const loader: LoaderFunction = async ({ request }) => {
   if (!userId || !user) return redirect("/");
 
   const messages = await getMessages();
-  const gameState = await getGameState(currentGame);
-  const scores = await getScores();
+  const gameState = await getGameState();
+  const players = await getPlayers();
 
-  if (gameState && gameState?.current_drawer > gameState?.players.length - 1) {
-    await nextPlayer(
-      currentGame,
-      gameState?.players,
-      gameState?.current_drawer
-    );
+  if (gameState && gameState.current_drawer > gameState.players.length - 1) {
+    await nextPlayer(gameState?.players, gameState?.current_drawer);
   }
 
   return json({
     messages,
     user,
     gameState,
-    scores,
+    players,
     env: {
       supabaseUrl: process.env.SUPABASE_URL,
       supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
@@ -65,28 +54,28 @@ export const action: ActionFunction = async ({ request }) => {
   const form = await request.formData();
   let text = form.get("text");
   const intent = form.get("intent");
+
+  const gameState = await getGameState();
+
   if (intent === "leave") {
     return logout(request);
   }
 
-  const gameState = await getGameState(currentGame);
-
   if (intent === "skip" && gameState) {
-    await nextPlayer(currentGame, gameState.players, gameState.current_drawer);
+    await nextPlayer(gameState.players, gameState.current_drawer);
     return null;
   }
 
+  // make guess
   const user = await getUser(request);
-
   if (typeof text !== "string" || text.length === 0) {
     return null;
   }
 
   const hasWon = text.toLowerCase() === gameState?.word.toLowerCase();
-
   if (hasWon) {
     await updateScore(user?.email, user?.score + 1);
-    await nextPlayer(currentGame, gameState.players, gameState.current_drawer);
+    await nextPlayer(gameState.players, gameState.current_drawer);
     await createMessage(user?.email, "✅ " + text);
   } else {
     await createMessage(user?.email, "❌ " + text);
@@ -97,16 +86,16 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function Index() {
   const data = useLoaderData() as LoaderData;
-  const user = data.user;
   const fetcher = useFetcher();
   const [messages, setMessages] = useState(data.messages);
   const [gameState, setGameState] = useState(data.gameState);
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [viewerRef, onChange, { reset: resetViewer }] = useRealtimeViewer();
 
   const supabase = createClient(data.env.supabaseUrl, data.env.supabaseAnonKey);
 
-  const [viewerRef, onChange, { reset: resetViewer }] = useRealtimeViewer();
+  const user = data.user;
   const drawer = gameState.players[gameState.current_drawer];
   const isDrawer = drawer === user?.email;
   const isWaiting = gameState.players.length < 2;
@@ -115,7 +104,7 @@ export default function Index() {
     await supabase
       .from("game_state")
       .update({ drawing: payload })
-      .eq("id", currentGame)
+      .eq("id", 1)
       .single();
   };
 
@@ -124,11 +113,6 @@ export default function Index() {
     color: "#000",
     onChange: onDrawingChange,
   });
-
-  const handleReset = useCallback(() => {
-    resetDrawer();
-    resetViewer();
-  }, [resetDrawer, resetViewer]);
 
   useEffect(() => {
     const messagesSubscription = supabase
@@ -169,6 +153,11 @@ export default function Index() {
       inputRef.current?.focus();
     }
   }, [formRef, fetcher.submission, data.messages, data.gameState]);
+
+  const handleReset = useCallback(() => {
+    resetDrawer();
+    resetViewer();
+  }, [resetDrawer, resetViewer]);
 
   return (
     <main className="relative min-h-screen w-full bg-white sm:flex sm:items-center sm:justify-center">
@@ -280,10 +269,10 @@ export default function Index() {
                 <>
                   <div className="mt-4 text-center">
                     <h3 className="underline">Leaderboard</h3>
-                    {data.scores.length > 0 &&
-                      data.scores.map((score) => (
-                        <p key={score.id} className="mb-1">
-                          <strong>{score.email}</strong>: {score.score}
+                    {data.players.length > 0 &&
+                      data.players.map((player) => (
+                        <p key={player.id} className="mb-1">
+                          <strong>{player.email}</strong>: {player.score}
                         </p>
                       ))}
                   </div>

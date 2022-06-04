@@ -9,8 +9,7 @@ import { createUserSession, getUserId } from "~/session.server";
 import { createUser, getProfileByEmail } from "~/models/user.server";
 import { validateEmail } from "~/utils";
 import * as React from "react";
-import { addPlayer } from "~/models/game_state.server";
-import { currentGame } from "./pictionary";
+import { addPlayer } from "~/models/gameState.server";
 
 export const meta: MetaFunction = () => {
   return {
@@ -27,7 +26,7 @@ interface ActionData {
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
-  if (userId) return redirect("/");
+  if (userId) return redirect("/pictionary");
   return json({});
 };
 
@@ -73,7 +72,7 @@ export const action: ActionFunction = async ({ request }) => {
 
   const user = await createUser(email, password);
 
-  await addPlayer(currentGame, email);
+  await addPlayer(email);
 
   return createUserSession({
     request,

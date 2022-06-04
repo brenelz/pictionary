@@ -9,8 +9,7 @@ import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import { verifyLogin } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { validateEmail } from "~/utils";
-import { addPlayer } from "~/models/game_state.server";
-import { currentGame } from "./pictionary";
+import { addPlayer } from "~/models/gameState.server";
 
 export const meta: MetaFunction = () => {
   return {
@@ -65,7 +64,7 @@ export const action: ActionFunction = async ({ request }) => {
     );
   }
 
-  await addPlayer(currentGame, email);
+  await addPlayer(email);
 
   return createUserSession({
     request,

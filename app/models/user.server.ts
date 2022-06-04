@@ -47,9 +47,9 @@ export async function updateScore(email: string, score: number) {
   if (data) return data;
 }
 
-export async function getScores() {
+export async function getPlayers() {
   const { data, error } = await supabase
-    .from("profiles")
+    .from<User>("profiles")
     .select("id, score, email")
     .order("score", { ascending: false });
 

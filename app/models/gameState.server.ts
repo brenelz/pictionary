@@ -1,6 +1,6 @@
 import type { PointPayload } from "react-realtime-drawing/dist/types";
 import { supabase } from "~/utils/supabase.server";
-import { getRandomWord } from "../utils/words";
+import { getRandomWord } from "../utils/words.server";
 
 export type GameState = {
   id: number;
@@ -10,11 +10,11 @@ export type GameState = {
   current_drawer: number;
 };
 
-export async function getGameState(id: number) {
+export async function getGameState() {
   const { data, error } = await supabase
     .from<GameState>("game_state")
     .select("id, word, drawing, players, current_drawer")
-    .eq("id", id)
+    .eq("id", 1)
     .single();
 
   if (error) {
@@ -24,11 +24,7 @@ export async function getGameState(id: number) {
   if (data) return data;
 }
 
-export async function nextPlayer(
-  id: number,
-  players: string[],
-  current_drawer: number
-) {
+export async function nextPlayer(players: string[], current_drawer: number) {
   const { data, error } = await supabase
     .from<GameState>("game_state")
     .update({
@@ -37,7 +33,7 @@ export async function nextPlayer(
       drawing: [],
       word: getRandomWord(),
     })
-    .eq("id", id)
+    .eq("id", 1)
     .single();
 
   if (error) {
@@ -47,7 +43,7 @@ export async function nextPlayer(
   if (data) return data;
 }
 
-export async function addPlayer(id: number, email: string) {
+export async function addPlayer(email: string) {
   const { data } = await supabase
     .from<GameState>("game_state")
     .select("players[]")
@@ -59,12 +55,12 @@ export async function addPlayer(id: number, email: string) {
       .update({
         players: Array.from(new Set([...data.players, email])),
       })
-      .eq("id", id)
+      .eq("id", 1)
       .single();
   }
 }
 
-export async function removePlayer(id: number, email: string) {
+export async function removePlayer(email: string) {
   const { data } = await supabase
     .from<GameState>("game_state")
     .select("players[]")
@@ -76,7 +72,7 @@ export async function removePlayer(id: number, email: string) {
       .update({
         players: data.players.filter((player) => player !== email),
       })
-      .eq("id", id)
+      .eq("id", 1)
       .single();
   }
 }

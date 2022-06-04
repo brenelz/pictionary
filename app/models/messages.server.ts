@@ -10,7 +10,7 @@ export type Message = {
 export async function getMessages() {
   const { data, error } = await supabase
     .from<Message>("messages")
-    .select("id, email, text")
+    .select("id, email, text, timestamp")
     .order("timestamp", { ascending: false })
     .limit(15);
 
